@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 namespace BucHelp.Data
 {
@@ -17,6 +19,11 @@ namespace BucHelp.Data
     {
         [BindProperty]
         public Credential Credential { get; set; }
+        private bool loggedIn = false;
+        public void SetLogin() 
+        {
+            loggedIn = true; 
+        }
         public void OnGet()
         {
 
@@ -26,6 +33,39 @@ namespace BucHelp.Data
         {
 
         }
+
+        public LoginModel()
+        {
+            Credential = new Credential();
+        }
+
+        public bool IsLoggedIn()
+        {
+            return loggedIn;
+        }
+
+        /// <summary>
+        /// Retrieves User object based on the email given.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>User object</returns>
+        public User GetUser(string email)
+        {
+            List<User> users = UserObjService.GetUserList();
+
+            LoginPractice.CreateUsers();
+
+            foreach (User user in users)
+            {
+                if (user.Email.ToLower().Equals(email.ToLower()))
+                {
+                    return user;
+                }
+            }
+
+            return null;
+        }
+        
     }
 
     /// <summary>
@@ -33,10 +73,88 @@ namespace BucHelp.Data
     /// </summary>
     public class Credential
     {
+
         [Required]
         public string Email { get; set; }
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }
+
+        public Credential()
+        {
+            Email = "";
+            Password = "";
+        }
+
+        /// <summary>
+        /// Returns if the email is valid or not
+        /// </summary>
+        /// <returns>bool value</returns>
+        public bool isValidEmail()
+        {
+            try
+            {
+                MailAddress m = new MailAddress(Email);
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Appstate for the login
+    /// </summary>
+    public class AppState
+    {
+        private bool _loggedIn;
+        public event Action OnChange;
+        
+        /// <summary>
+        /// Returns logged in state.
+        /// </summary>
+        public bool LoggedIn
+        {
+            get { return _loggedIn; }
+            set
+            {
+                if (_loggedIn != value)
+                {
+                    _loggedIn = value;
+                    NotifyStateChanged();
+                }
+            }
+        }
+
+        private void NotifyStateChanged() => OnChange?.Invoke();
+    }
+
+    /// <summary>
+    /// Created input for users csv file
+    /// </summary>
+    public class LoginPractice
+    {
+        private static List<User> UsersList = new List<User>();
+
+        public static void CreateUsers()
+        {
+            UsersList.Add(new User("1234", "Duck@yahoo.com", "student", 0));
+            UsersList.Add(new User("password", "YoungDuck@yahoo.com", "student", 1));
+            UsersList.Add(new User("123", "Chick@yahoo.com", "student", 2));
+            UsersList.Add(new User("Leader", "DuckMaster@yahoo.com", "faculty", 3));
+            UsersList.Add(new User("SomePassword", "Something@etsu.edu", "student", 4));
+
+            for (int i = 0; i < UsersList.Count; i++)
+            {
+                UserObjService.Write(UsersList[i]);
+            }
+
+            DatabaseServices.Drivers.GetDefaultDriver().Commit();
+
+            
+        }
     }
 }

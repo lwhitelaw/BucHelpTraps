@@ -1,0 +1,246 @@
+﻿@page "/profile/{ID:int}"
+@inject NavigationManager navman
+@inject User UserMenu
+@using Data
+
+<h3>Profile</h3>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    .checked {
+        color: #FFC72C;
+    }
+
+    .fa {
+        font-size: 50px;
+        right: -900px;
+        top: 150px;
+        margin: 0px;
+        position: relative;
+    }
+</style>
+
+<div class="containerProfile">
+    <!-- Check to see if user has a profile: This is an error check -->
+    @if(currentProfile != null)
+    {
+        @if (currentProfile.Reviews > 0)
+        {
+            averageStars = currentProfile.Stars / currentProfile.Reviews;
+        }
+        @if (currentProfile.Reviews == 0)
+        {
+            averageStars = 0;
+        }
+
+        @if (averageStars < 1 || averageStars > 5 || averageStars == null)
+        {
+            <div style="margin-right: 100px; position: relative;">
+                <span class="fa fa-star"></span>
+                <span class="fa fa-star"></span>
+                <span class="fa fa-star"></span>
+                <span class="fa fa-star"></span>
+                <span class="fa fa-star"></span>
+            </div>
+        }
+        @if (averageStars == 1)
+        {
+            <div style="margin-right: 100px; position: relative;">
+                <span class="fa fa-star checked "></span>
+                <span class="fa fa-star "></span>
+                <span class="fa fa-star "></span>
+                <span class="fa fa-star "></span>
+                <span class="fa fa-star "></span>
+            </div>
+        }
+        @if (averageStars == 2)
+        {
+            <div style="margin-right: 100px; position: relative;">
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star"></span>
+                <span class="fa fa-star "></span>
+                <span class="fa fa-star "></span>
+            </div>
+        }
+        @if (averageStars == 3)
+        {
+            <div style="margin-right: 100px; position: relative;">
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star"></span>
+                <span class="fa fa-star"></span>
+            </div>
+        }
+        @if (averageStars == 4)
+        {
+            <div style="margin-right: 100px; position: relative;">
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star"></span>
+            </div>
+        }
+        @if (averageStars == 5)
+        {
+            <div style="margin-right: 100px; position: relative;">
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+                <span class="fa fa-star checked"></span>
+            </div>
+        }
+
+
+        <img src="/Images/Tina_front_pic.jpg" alt="Tina is adorable" style=" position: relative; top: 0px; left: 0px; width:200px;height:200px; border-radius: 50%;" />
+        <h4 style="position: relative; top: -150px; left: 975px;">Points: @currentProfile.Points</h4>
+
+
+        <div style="width: 200px;  padding: 10px; border: 5px solid gray; position: relative; top: -10px; left: 0px;">@currentProfile.Username</div>
+        <div style="width: 200px;  padding: 10px; border: 5px solid gray; position: relative; top: -10px; left: 0px;">@currentProfile.Major</div>
+
+        <div style="width: 600px; padding: 10px; border: 5px solid gray; position: relative; top: -350px; left: 250px;">@currentProfile.Name</div>
+        <div style="width: 600px; height: 245px; padding: 10px; border: 5px solid gray; position: relative; top: -350px; left: 250px;">@currentProfile.Description</div>
+
+        <h3 style="position: relative; top: -350px; left: 500px;">Contact</h3>
+
+        <div style="width: 600px; padding: 10px; border: 5px solid gray; position: relative; top: -350px; left: 250px;">Email: @currentProfile.Email</div>
+        @if (!String.IsNullOrEmpty(currentProfile.Phone))
+        {
+            <div style="width: 600px; padding: 10px; border: 5px solid gray; position: relative; top: -350px; left: 250px;">Phone: @currentProfile.Phone</div>
+        }
+        @if (!String.IsNullOrEmpty(currentProfile.SocialMedia))
+        {
+            <div style="width: 600px; padding: 10px; border: 5px solid gray; position: relative; top: -350px; left: 250px;">Social Media: @currentProfile.SocialMedia</div>
+        }
+    }
+    
+</div>
+
+
+<!-- If statments for the up and down vote buttons. -->
+@if (vote.GetVote() == 1)
+{
+    // <button class="btn btn-primary" @onclick="OnUpDoot" disabled = "true">Up</button>
+}
+else
+{
+    // <button class="btn btn-primary" @onclick="OnUpDoot">Up</button>
+}
+
+@if (vote.GetVote() == -1)
+{
+    // <button class="btn btn-primary" @onclick="OnDownDoot" disabled = "true">Down</button>
+}
+else
+{
+    // <button class="btn btn-primary" @onclick="OnDownDoot">Down</button>
+}
+
+
+
+<!--Brandon: This code is to demonstrate how to store variables, the above shows how to print them-->
+@code {
+    [Parameter]
+    public int ID { get; set; }
+
+    /*private static string password = "dang", //Because we are probably not going to have the User data stored directly here and call from a database instead
+                                             //(One of which does not exist at the moment), the password is being stored here to make a user object possible to make
+                          name = "WhatsYourFullName",
+                          major = "Math",
+                          address = "yofullname@google.com",
+                          description = "This is a test description for the profile.",
+                          phone = "123-555-7890",
+                          socialmedia = "yogabbagabba",
+                          affiliation = "Student";//There has to be a more efficient way of creating a Profile, I just don't know it
+
+    private static Profile profileDetails = new Profile(name, major, description, phone, socialmedia);
+    private static User funnyUser = new User(password, address, affiliation, profileDetails);
+    */
+    private static User currentUser = new User();
+    private static Profile currentProfile = new Profile();
+
+    private static int? averageStars = 0;
+
+    //Thanks Ethan for this code
+    protected override async Task OnInitializedAsync()
+    {
+        User u = UserObjService.GetForID(ID);
+        if (u == null)
+        {
+            navman.NavigateTo("/");
+            //Brandon here, just emulating the past
+        }
+        currentUser = u;
+
+        Profile p = ProfileObjService.GetForID(ID);
+        if(p == null)
+        {
+            navman.NavigateTo("/");
+        }
+        currentProfile = p;
+
+        for (int i = 0; i < UserMenu.UsersList.Count(); ++i)
+        {
+            int extraction = ID; //extraction string for the title
+
+            if (UserMenu.UsersList[i].UserId == extraction)
+            {
+                currentUser = UserMenu.UsersList[i];
+            }
+        }
+
+        // Error Check
+        if(currentProfile != null)
+        {
+            if (currentProfile.Reviews > 0)
+            {
+                averageStars = currentProfile.Stars / currentProfile.Reviews;
+            }
+        }
+        
+    }
+
+    //Start of upvote and downvote code
+    int votes = 0;
+    string voteType;
+    Vote vote = new Vote();
+
+
+    private void PageLoad()
+    {
+
+
+
+
+
+
+    }
+
+    private void VoteTypeQuestion()
+    {
+        voteType = "question";
+    }
+
+    private void VoteTypeReply()
+    {
+        voteType = "reply";
+    }
+
+    private void OnUpDoot()
+    {
+        vote.SelectVote(1, voteType);
+        votes++;
+        //PageLoad();
+    }
+
+    private void OnDownDoot()
+    {
+        vote.SelectVote(-1, voteType);
+        votes--;
+        //PageLoad();
+    }
+}

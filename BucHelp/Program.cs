@@ -5,11 +5,15 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-
 builder.Services.TryAddScoped<Question>();
+builder.Services.TryAddScoped<User>();//Fix for no services found
+builder.Services.AddSingleton<AppState>();
+builder.Services.AddScoped<NavUtil>();
+
 
 var app = builder.Build();
 
